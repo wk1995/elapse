@@ -3,6 +3,8 @@ package com.tuya.smart.sample
 import android.app.Application
 import android.content.Context
 import com.tuya.smart.raster.Raster
+import com.tuya.smart.raster.RasterLogger
+import com.tuya.smart.raster.RasterOptions
 import me.weishu.reflection.Reflection
 
 class APP: Application() {
@@ -14,6 +16,8 @@ class APP: Application() {
 
     override fun onCreate() {
         super.onCreate()
-        Raster.init(this)
+        val options = RasterOptions()
+        options.logLevel = RasterLogger.LogLevel.All
+        Raster.init(this, options)
     }
 }

@@ -11,7 +11,9 @@ internal class RasterTimeLine: Iterable<RasterRecord> {
     fun addRecord(r: RasterRecord) {
         mList.offer(r)
         if (r.name != "IDLE") {
-            Raster.logger.d(msg = r.toString())
+            if (Raster.logLevel >= RasterLogger.LogLevel.Debug) {
+                Raster.logger.d(msg = r.toString())
+            }
         }
         mCount ++
         val edge = r.start - Raster.timeLineDuration

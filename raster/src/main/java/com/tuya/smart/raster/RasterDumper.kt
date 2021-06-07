@@ -69,7 +69,9 @@ total count: ${timeLine.getCount()}
                 dumpSlowRecord(it, dumperWriter)
             } else {
                 val content = it.toString()
-                logger.d(msg = content)
+                if (Raster.logLevel >= RasterLogger.LogLevel.Debug) {
+                    logger.d(msg = content)
+                }
                 dumperWriter.write(content)
                 dumperWriter.write("\n")
                 dumperWriter.flush()
@@ -92,7 +94,9 @@ ${stackTrace?.joinToString("\nat ", "at ")}
 
 
             """.trimIndent()
-            logger.s(msg = formatRecord)
+            if (Raster.logLevel >= RasterLogger.LogLevel.Slow) {
+                logger.e(msg = formatRecord)
+            }
             writer.write(formatRecord)
             writer.flush()
         }

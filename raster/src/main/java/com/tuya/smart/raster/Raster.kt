@@ -55,6 +55,7 @@ object Raster {
         enqueueDelay = max(slowThreshold * 2, 3000L)
         recordMaxDuration = options.recordMaxDuration
         timeLineDuration = options.timeLineDuration
+        logLevel = options.logLevel
         maxRecordCount = timeLineDuration / recordMaxDuration / 3
         logger = options.logger
 
