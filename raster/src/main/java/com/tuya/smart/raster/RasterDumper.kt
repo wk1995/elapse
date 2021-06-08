@@ -88,7 +88,7 @@ start: timestamp=${start}  relative=${Util.relativeTime(start)}
 wallTime=${end?.minus(start)}   cpuTime=${cpuTime ?: "unknown"}
 handler=${handler}
 callback=${callback}
-what=${what}
+what=${what} ${if (handler.startsWith("Handler(android.app.ActivityThread\$H)")) {"(${RasterKeyMessages[what.toInt()]})"} else ""}
 main thread stack:               
 ${stackTrace?.joinToString("\nat ", "at ")}
 
