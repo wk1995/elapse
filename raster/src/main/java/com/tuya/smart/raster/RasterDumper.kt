@@ -20,6 +20,9 @@ internal class RasterDumper: Thread("raster-dumper") {
 
     private val dateFormat: SimpleDateFormat = SimpleDateFormat("yyyyMMdd-HHmmss", Locale.CHINA)
 
+    internal val dateTimeFormat: SimpleDateFormat = SimpleDateFormat("MM-dd HH:mm:ss.SSS", Locale.CHINA)
+
+
     private val logger = Raster.logger
 
     init {
@@ -82,7 +85,7 @@ total count: ${timeLine.getCount()}
     private fun dumpSlowRecord(r: RasterRecord, writer: FileWriter) {
         r.apply {
             val formatRecord = """
------------- Slow Record ($name)  ------------
+------------ Slow Record (${dateTimeFormat.format(date)})  ------------
 end:   timestamp=${end ?: "> ${Raster.enqueueDelay}"}  relative=${Util.relativeTime(end ?: Raster.enqueueDelay)}
 start: timestamp=${start}  relative=${Util.relativeTime(start)} 
 wallTime=${end?.minus(start)}   cpuTime=${cpuTime ?: "unknown"}

@@ -1,6 +1,10 @@
 package com.tuya.smart.raster
 
+import java.util.*
+
 internal data class RasterRecord private constructor(var name: String, var count:Int = 0, var start:Long, var end:Long? = null, var cpuTime:Long? = null, var handler: String = "", var callback: String = "", var what: String = "", var stackTrace: Array<StackTraceElement>? = null) {
+
+    val date:Long = System.currentTimeMillis()
 
     companion object {
 
@@ -18,7 +22,7 @@ internal data class RasterRecord private constructor(var name: String, var count
     }
 
     override fun toString(): String {
-        return "RasterRecord(name=$name, count=$count, start=${Util.relativeTime(start)}, end=${
+        return "${Raster.dumper.dateTimeFormat.format(date)}: (name=$name, count=$count, start=${Util.relativeTime(start)}, end=${
             Util.relativeTime(
                 end!!
             )
