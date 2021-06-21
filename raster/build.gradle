@@ -45,7 +45,7 @@ dependencies {
 }
 
 upInfo {
-    version = "0.0.1"
+    version = "0.0.2"
     artifactId = "tuyasmart-raster"
     groupId = "com.tuya.smart"
     hasPomDepend false
