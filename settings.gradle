@@ -1,3 +1,4 @@
+include ':raster-no-op'
 include ':raster'
 include ':app'
 rootProject.name = "raster"

@@ -47,5 +47,6 @@ dependencies {
 
     implementation 'me.weishu:free_reflection:3.0.1'
 
-    implementation project(':raster')
+//    implementation project(':raster')
+    implementation project(':raster-no-op')
 }
