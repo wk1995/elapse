@@ -17,6 +17,7 @@ internal class RasterMonitor : HandlerThread("raster-handler-thread") {
 
         private const val keyMessageRegex = "Handler (android.app.ActivityThread\$H)"
 
+        private const val inputMessageRegexOn = false
         private const val inputMessageRegex = "Handler (android.view.Choreographer\$FrameHandler)"
 
         fun obtainTask(c: Long, m: String): Task {
@@ -93,32 +94,38 @@ internal class RasterMonitor : HandlerThread("raster-handler-thread") {
             curRecord = RasterRecord.obtain("KeyMsg ${RasterKeyMessages[key]}", start = startTime)
         }
 
-        if (m.indexOf(inputMessageRegex, startIndex =  START_FLAG.length) > 0) { // Choreographer.FrameHandler
-            val splits = m.split(" ")
-            val key = splits[splits.size - 1].toInt()
-            if (key == 0) { // 0 = Choreographer.MSG_DO_FRAME
+        if (inputMessageRegexOn) { // always false, will delete
+            if (m.indexOf(
+                    inputMessageRegex,
+                    startIndex = START_FLAG.length
+                ) > 0
+            ) { // Choreographer.FrameHandler
+                val splits = m.split(" ")
+                val key = splits[splits.size - 1].toInt()
+                if (key == 0) { // 0 = Choreographer.MSG_DO_FRAME
+                    curRecord?.run {
+                        if (name != "DO_FRAME") {
+                            end = lastMessageEndTime
+                            cpuTime = curMessageCpuTime - curRecordCPUTime // 误差有限
+                            timeLine.addRecord(this)
+                            curRecordCPUTime = -1
+                            curRecord = null
+                        }
+                    }
+                    curRecord = curRecord ?: RasterRecord.obtain(
+                        "DO_FRAME",
+                        start = startTime
+                    ) // DO_FRAME包含Input事件
+                }
+            } else {
                 curRecord?.run {
-                    if (name != "DO_FRAME") {
+                    if (name == "DO_FRAME") {
                         end = lastMessageEndTime
-                        cpuTime = curMessageCpuTime - curRecordCPUTime // 误差有限
+                        cpuTime = curMessageCpuTime - curRecordCPUTime
                         timeLine.addRecord(this)
                         curRecordCPUTime = -1
                         curRecord = null
                     }
-                }
-                curRecord = curRecord?: RasterRecord.obtain(
-                    "DO_FRAME",
-                    start = startTime
-                ) // DO_FRAME包含Input事件
-            }
-        } else {
-            curRecord?.run {
-                if (name == "DO_FRAME") {
-                    end = lastMessageEndTime
-                    cpuTime = curMessageCpuTime - curRecordCPUTime
-                    timeLine.addRecord(this)
-                    curRecordCPUTime = -1
-                    curRecord = null
                 }
             }
         }

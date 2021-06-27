@@ -1,6 +1,12 @@
 package com.tuya.smart.raster
 
+import android.annotation.SuppressLint
+import android.os.Looper
+import android.os.Message
+import android.os.MessageQueue
 import android.os.Process
+import android.util.SparseArray
+import androidx.core.util.set
 import java.io.File
 import java.io.FileWriter
 import java.text.SimpleDateFormat
@@ -20,7 +26,10 @@ internal class RasterDumper: Thread("raster-dumper") {
 
     private val dateFormat: SimpleDateFormat = SimpleDateFormat("yyyyMMdd-HHmmss", Locale.CHINA)
 
-    internal val dateTimeFormat: SimpleDateFormat = SimpleDateFormat("MM-dd HH:mm:ss.SSS", Locale.CHINA)
+    internal val dateTimeFormat: SimpleDateFormat = SimpleDateFormat(
+        "MM-dd HH:mm:ss.SSS",
+        Locale.CHINA
+    )
 
 
     private val logger = Raster.logger
@@ -80,6 +89,7 @@ total count: ${timeLine.getCount()}
                 dumperWriter.flush()
             }
         }
+        dumpPendingMessages(dumperWriter)
     }
 
     private fun dumpSlowRecord(r: RasterRecord, writer: FileWriter) {
@@ -105,5 +115,61 @@ ${stackTrace?.joinToString("\nat ", "at ")}
         }
     }
 
+    @SuppressLint("NewApi")
+    private fun dumpPendingMessages(dumperWriter: FileWriter) {
+        val queue = Looper.getMainLooper().queue // 21-23版本有这个api，只是方法被@hide标记，可以正常执行
+        val mMessagesF = MessageQueue::class.java.getField("mMessages")
+        mMessagesF.isAccessible = true
+        val mMessages = mMessagesF.get(queue) as Message?
+
+        val nextF = Message::class.java.getField("next")
+        nextF.isAccessible = true
+
+        var msg: Message? = mMessages
+        while (msg != null) {
+            dumpPendingMessage(msg, dumperWriter)
+            msg = nextF.get(mMessages) as Message?
+        }
+        dumperWriter.flush()
+    }
+
+    private fun dumpPendingMessage(msg: Message, dumperWriter: FileWriter) {
+        when (msg.target.javaClass.name) {
+            "android.app.ActivityThread\$H" -> {
+                dumperWriter.write(
+                    "Pending KeyMsg: ${
+                        msg.toString().replaceFirst(
+                            "what=${msg.what}",
+                            "what=${RasterKeyMessages[msg.what]}(${msg.what})"
+                        )
+                    }"
+                )
+            }
+            "android.view.Choreographer\$FrameHandler" -> {
+                val output = msg.toString().replaceFirst(
+                    "what=${msg.what}",
+                    "what=${frameKeys[msg.what]}(${msg.what})"
+                )
+                if (msg.what == 2 && msg.arg1 == 0) { // input事件
+                    dumperWriter.write("Pending InputMsg: $output")
+                } else {
+                    dumperWriter.write("Pending FrameMsg: $output")
+                }
+            }
+            else -> {
+                dumperWriter.write("Pending Msg: $msg")
+            }
+        }
+    }
+
+
+    companion object {
+        private val frameKeys = SparseArray<String>()
+        init {
+            frameKeys[0] = "DO_FRAME"
+            frameKeys[1] = "DO_SCHEDULE_VSYNC"
+            frameKeys[2] = "DO_SCHEDULE_CALLBACK"
+        }
+    }
 
 }
