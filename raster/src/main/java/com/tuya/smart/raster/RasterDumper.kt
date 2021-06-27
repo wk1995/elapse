@@ -89,7 +89,12 @@ total count: ${timeLine.getCount()}
                 dumperWriter.flush()
             }
         }
-        dumpPendingMessages(dumperWriter)
+        try {
+            dumpPendingMessages(dumperWriter)
+        } catch (e: Throwable) {
+            e.printStackTrace()
+        }
+        dumperWriter.close()
     }
 
     private fun dumpSlowRecord(r: RasterRecord, writer: FileWriter) {
@@ -118,12 +123,14 @@ ${stackTrace?.joinToString("\nat ", "at ")}
     @SuppressLint("NewApi")
     private fun dumpPendingMessages(dumperWriter: FileWriter) {
         val queue = Looper.getMainLooper().queue // 21-23版本有这个api，只是方法被@hide标记，可以正常执行
-        val mMessagesF = MessageQueue::class.java.getField("mMessages")
+        val mMessagesF = MessageQueue::class.java.getDeclaredField("mMessages")
         mMessagesF.isAccessible = true
         val mMessages = mMessagesF.get(queue) as Message?
 
-        val nextF = Message::class.java.getField("next")
+        val nextF = Message::class.java.getDeclaredField("next")
         nextF.isAccessible = true
+
+        dumperWriter.write("---------- Pending Messages ---------")
 
         var msg: Message? = mMessages
         while (msg != null) {
@@ -134,32 +141,37 @@ ${stackTrace?.joinToString("\nat ", "at ")}
     }
 
     private fun dumpPendingMessage(msg: Message, dumperWriter: FileWriter) {
+        if (msg.target == null) {
+            return
+        }
+        val pendingMessage: String
         when (msg.target.javaClass.name) {
             "android.app.ActivityThread\$H" -> {
-                dumperWriter.write(
+                pendingMessage =
                     "Pending KeyMsg: ${
                         msg.toString().replaceFirst(
                             "what=${msg.what}",
                             "what=${RasterKeyMessages[msg.what]}(${msg.what})"
                         )
                     }"
-                )
             }
             "android.view.Choreographer\$FrameHandler" -> {
                 val output = msg.toString().replaceFirst(
                     "what=${msg.what}",
                     "what=${frameKeys[msg.what]}(${msg.what})"
                 )
-                if (msg.what == 2 && msg.arg1 == 0) { // input事件
-                    dumperWriter.write("Pending InputMsg: $output")
+                pendingMessage = if (msg.what == 2 && msg.arg1 == 0) { // input事件
+                    ("Pending InputMsg: $output")
                 } else {
-                    dumperWriter.write("Pending FrameMsg: $output")
+                    ("Pending FrameMsg: $output")
                 }
             }
             else -> {
-                dumperWriter.write("Pending Msg: $msg")
+                pendingMessage = ("Pending Msg: $msg")
             }
         }
+        dumperWriter.write(pendingMessage)
+        dumperWriter.write("\n")
     }
 
 

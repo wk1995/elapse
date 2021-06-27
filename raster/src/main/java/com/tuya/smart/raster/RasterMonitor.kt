@@ -17,7 +17,7 @@ internal class RasterMonitor : HandlerThread("raster-handler-thread") {
 
         private const val keyMessageRegex = "Handler (android.app.ActivityThread\$H)"
 
-        private const val inputMessageRegexOn = false
+        private const val inputMessageRegexOn = true
         private const val inputMessageRegex = "Handler (android.view.Choreographer\$FrameHandler)"
 
         fun obtainTask(c: Long, m: String): Task {
