@@ -4,29 +4,32 @@ import java.util.concurrent.ConcurrentLinkedDeque
 
 internal class RasterTimeLine: Iterable<RasterRecord> {
 
-    private val mList = ConcurrentLinkedDeque<RasterRecord>()
+    private val mDequeue = ConcurrentLinkedDeque<RasterRecord>()
 
     private var mCount = 0
 
     fun addRecord(r: RasterRecord) {
-        mList.offer(r)
+        mDequeue.offer(r)
 //        if (r.name != "IDLE") {
             if (Raster.logLevel >= RasterLogger.LogLevel.Debug) {
                 Raster.logger.d(msg = r.toString())
             }
 //        }
         mCount ++
-        val edge = mList.first.start - Raster.timeLineDuration
+        val edge = mDequeue.last.end!! - Raster.timeLineDuration
         if (edge < 0) {
             return
         }
         do {
-            val l = mList.peek()
-            val brk = l?.run {
-                if (end!! < edge) {
-                    mList.poll()
+            val first = mDequeue.peekFirst()
+//            val time = mDequeue.last.end!! - mDequeue.first.start
+//            println("$time -> $edge")
+            val brk = first?.run {
+                if (start < edge) {
+//                    println("on Evict: $this")
+                    mDequeue.pollFirst()
                     mCount --
-                    onEvict(l)
+                    onEvict(this)
                     return@run false
                 }
                 return@run true
@@ -47,6 +50,6 @@ internal class RasterTimeLine: Iterable<RasterRecord> {
     }
 
     override fun iterator(): Iterator<RasterRecord> {
-        return mList.iterator()
+        return mDequeue.iterator()
     }
 }

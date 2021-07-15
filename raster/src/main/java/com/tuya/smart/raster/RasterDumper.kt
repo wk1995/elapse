@@ -130,15 +130,17 @@ ${stackTrace?.joinToString("\nat ", "at ")}
 
         dumperWriter.write("---------- Pending Messages ---------\n")
 
-        var msg: Message? = mMessages
-        var count = 0
-        while (msg != null) {
-            count++
-            dumpPendingMessage(msg, dumperWriter)
-            msg = nextF.get(msg) as Message?
+        synchronized(queue) {
+            var msg: Message? = mMessages
+            var count = 0
+            while (msg != null) {
+                count++
+                dumpPendingMessage(msg, dumperWriter)
+                msg = nextF.get(msg) as Message?
+            }
+            dumperWriter.write("total count: $count \n")
+            dumperWriter.flush()
         }
-        dumperWriter.write("total count: $count \n")
-        dumperWriter.flush()
     }
 
     private fun dumpPendingMessage(msg: Message, dumperWriter: FileWriter) {
@@ -164,6 +166,9 @@ ${stackTrace?.joinToString("\nat ", "at ")}
             else -> {
                 pendingMessage = ("Pending Msg: ${messageToString(msg)}")
             }
+        }
+        if (Raster.logLevel >= RasterLogger.LogLevel.Debug) {
+            logger.d(msg = pendingMessage)
         }
         dumperWriter.write(pendingMessage)
         dumperWriter.write("\n")

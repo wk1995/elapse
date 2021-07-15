@@ -4,7 +4,7 @@ import java.util.*
 
 internal data class RasterRecord private constructor(var name: String, var count:Int = 0, var start:Long, var end:Long? = null, var cpuTime:Long? = null, var handler: String = "", var callback: String = "", var what: String = "", var stackTrace: Array<StackTraceElement>? = null) {
 
-    val date:Long = System.currentTimeMillis()
+    var date:Long = System.currentTimeMillis()
 
     companion object {
 
@@ -17,6 +17,7 @@ internal data class RasterRecord private constructor(var name: String, var count
             r.end = end
             r.count = count
             r.cpuTime = cpuTime
+            r.date = System.currentTimeMillis()
             return r
         }
     }
