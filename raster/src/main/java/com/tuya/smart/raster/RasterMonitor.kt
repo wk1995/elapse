@@ -17,7 +17,7 @@ internal class RasterMonitor : HandlerThread("raster-handler-thread") {
 
         private const val keyMessageRegex = "Handler (android.app.ActivityThread\$H)"
 
-        private const val inputMessageRegexOn = true
+        private const val inputMessageRegexOn = false
         private const val inputMessageRegex = "Handler (android.view.Choreographer\$FrameHandler)"
 
         fun obtainTask(c: Long, m: String): Task {
@@ -91,7 +91,7 @@ internal class RasterMonitor : HandlerThread("raster-handler-thread") {
             }
             val splits = m.split(" ")
             val key = splits[splits.size - 1].toInt()
-            curRecord = RasterRecord.obtain("KeyMsg ${RasterKeyMessages[key]}", start = startTime)
+            curRecord = RasterRecord.obtain("KeyMsg ${RasterKeyMessages[key]}($key)", start = startTime)
         }
 
         if (inputMessageRegexOn) { // always false, will delete
@@ -238,7 +238,14 @@ internal class RasterMonitor : HandlerThread("raster-handler-thread") {
             handler?.postDelayed({
                 Raster.dumper.enqueue(slow!!)
             }, Raster.enqueueDelay)
-            recycleTask(this)
+
+            if (Raster.enableFindSlowMethod) {
+                handler?.postDelayed(this, Raster.slowThreshold)
+            } else {
+                recycleTask(this)
+            }
+
+
         }
 
     }

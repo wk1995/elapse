@@ -5,5 +5,6 @@ data class RasterOptions(@JvmField var slowThreshold: Long = 100L,    // 单条�
                          @JvmField var recordMaxDuration:Int = 300,   // 单条记录最大时长, 连续多条消息时间总和在recordMaxDuration内的，会聚合记录在一条Msgs记录
                          @JvmField var timeLineDuration:Int = 35 * 1000,  // raster只记录最近timeLineDuration时间内的记录，超过timeLineDuration的记录会被清除
                          @JvmField var logLevel: RasterLogger.LogLevel = RasterLogger.LogLevel.Error,
-                         @JvmField var logger: RasterLogger = RasterLogger.Default
+                         @JvmField var logger: RasterLogger = RasterLogger.Default,
+                         @JvmField var enableFindSlowMethod: Boolean = false
 )

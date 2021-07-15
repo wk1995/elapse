@@ -21,15 +21,17 @@ class APP: Application(), Handler.Callback {
         super.onCreate()
         val options = RasterOptions()
         options.logLevel = RasterLogger.LogLevel.All
+        options.enableFindSlowMethod = true
         Raster.init(this, options)
 
         val h = Handler(Looper.getMainLooper(), this)
         Thread {
             while(true) {
-                Thread.sleep(1)
-//                h.sendEmptyMessage(2000)
+                Thread.sleep(3)
+                h.sendEmptyMessage(2000)
             }
-        }.start()
+        }
+//            .start()
     }
 
     override fun handleMessage(msg: Message): Boolean {

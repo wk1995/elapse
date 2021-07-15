@@ -61,6 +61,7 @@ object RasterKeyMessages: SparseArray<String>() {
         put(154, "LOCAL_VOICE_INTERACTION_STARTED")
         put(155, "ATTACH_AGENT")
         put(156, "APPLICATION_INFO_CHANGED")
+        put(157, "ACTIVITY_MOVED_TO_DISPLAY")
         put(158, "RUN_ISOLATED_ENTRY_POINT")
         put(159, "EXECUTE_TRANSACTION")
         put(160, "RELAUNCH_ACTIVITY")

@@ -28,6 +28,8 @@ object Raster {
 
     internal var maxRecordCount = -1
 
+    internal var enableFindSlowMethod = false
+
     internal val zeroTime = SystemClock.uptimeMillis()
 
     internal lateinit var monitor: RasterMonitor

@@ -1,14 +1,12 @@
 package com.tuya.smart.raster
 
 import android.annotation.SuppressLint
-import android.os.Looper
-import android.os.Message
-import android.os.MessageQueue
-import android.os.Process
+import android.os.*
 import android.util.SparseArray
 import androidx.core.util.set
 import java.io.File
 import java.io.FileWriter
+import java.lang.StringBuilder
 import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.LinkedBlockingQueue
@@ -101,9 +99,9 @@ total count: ${timeLine.getCount()}
         r.apply {
             val formatRecord = """
 ------------ Slow Record (${dateTimeFormat.format(date)})  ------------
-end:   timestamp=${end ?: "> ${Raster.enqueueDelay}"}  relative=${Util.relativeTime(end ?: Raster.enqueueDelay)}
+end:   timestamp=${end}  relative=${Util.relativeTime(end ?: 0L)}
 start: timestamp=${start}  relative=${Util.relativeTime(start)} 
-wallTime=${end?.minus(start)}   cpuTime=${cpuTime ?: "unknown"}
+wallTime${if (end != null) "=${end?.minus(start)}" else ">=${Raster.enqueueDelay}"}   cpuTime=${cpuTime ?: "unknown"}
 handler=${handler}
 callback=${callback}
 what=${what} ${if (handler.startsWith("Handler(android.app.ActivityThread\$H)")) {"(${RasterKeyMessages[what.toInt()]})"} else ""}
@@ -130,13 +128,16 @@ ${stackTrace?.joinToString("\nat ", "at ")}
         val nextF = Message::class.java.getDeclaredField("next")
         nextF.isAccessible = true
 
-        dumperWriter.write("---------- Pending Messages ---------")
+        dumperWriter.write("---------- Pending Messages ---------\n")
 
         var msg: Message? = mMessages
+        var count = 0
         while (msg != null) {
+            count++
             dumpPendingMessage(msg, dumperWriter)
-            msg = nextF.get(mMessages) as Message?
+            msg = nextF.get(msg) as Message?
         }
+        dumperWriter.write("total count: $count \n")
         dumperWriter.flush()
     }
 
@@ -149,17 +150,11 @@ ${stackTrace?.joinToString("\nat ", "at ")}
             "android.app.ActivityThread\$H" -> {
                 pendingMessage =
                     "Pending KeyMsg: ${
-                        msg.toString().replaceFirst(
-                            "what=${msg.what}",
-                            "what=${RasterKeyMessages[msg.what]}(${msg.what})"
-                        )
+                        messageToString(msg, keyMsg = true)
                     }"
             }
             "android.view.Choreographer\$FrameHandler" -> {
-                val output = msg.toString().replaceFirst(
-                    "what=${msg.what}",
-                    "what=${frameKeys[msg.what]}(${msg.what})"
-                )
+                val output = messageToString(msg, frameMsg = true)
                 pendingMessage = if (msg.what == 2 && msg.arg1 == 0) { // input事件
                     ("Pending InputMsg: $output")
                 } else {
@@ -167,13 +162,12 @@ ${stackTrace?.joinToString("\nat ", "at ")}
                 }
             }
             else -> {
-                pendingMessage = ("Pending Msg: $msg")
+                pendingMessage = ("Pending Msg: ${messageToString(msg)}")
             }
         }
         dumperWriter.write(pendingMessage)
         dumperWriter.write("\n")
     }
-
 
     companion object {
         private val frameKeys = SparseArray<String>()
@@ -181,6 +175,55 @@ ${stackTrace?.joinToString("\nat ", "at ")}
             frameKeys[0] = "DO_FRAME"
             frameKeys[1] = "DO_SCHEDULE_VSYNC"
             frameKeys[2] = "DO_SCHEDULE_CALLBACK"
+        }
+
+        private fun messageToString(msg: Message, keyMsg: Boolean = false, frameMsg:Boolean = false): String {
+            msg.apply {
+                val b = StringBuilder()
+                b.append("{ when=-")
+                    .append(Util.formatTime(SystemClock.uptimeMillis() - `when`))
+
+
+                if (target != null) {
+                    if (callback != null) {
+                        b.append(" callback=")
+                        b.append(callback.javaClass.name)
+                    }
+                    b.append(" what=")
+                    when {
+                        keyMsg -> {
+                            b.append("${RasterKeyMessages[what]}(${what}")
+                        }
+                        frameMsg -> {
+                            b.append("${frameKeys[what]}(${what})")
+                        }
+                        else -> {
+                            b.append(what)
+                        }
+                    }
+
+                    if (arg1 != 0) {
+                        b.append(" arg1=")
+                        b.append(arg1)
+                    }
+                    if (arg2 != 0) {
+                        b.append(" arg2=")
+                        b.append(arg2)
+                    }
+                    if (obj != null) {
+                        b.append(" obj=")
+                        b.append(obj)
+                    }
+                    b.append(" target=")
+                    b.append(target.javaClass.name)
+                } else {
+                    b.append(" barrier=")
+                    b.append(arg1)
+                }
+
+                b.append(" }")
+                return b.toString()
+            }
         }
     }
 

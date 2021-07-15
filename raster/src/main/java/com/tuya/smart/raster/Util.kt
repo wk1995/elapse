@@ -8,7 +8,7 @@ import java.util.*
 
 internal object Util {
 
-    private val timeFormat = SimpleDateFormat("yyyy.MM.dd HH:mm:ss.SSS", Locale.CHINA)
+    private val durationFormat = SimpleDateFormat("ss.SSS", Locale.CHINA)
 
     private const val DURATION_ONE_SECOND = 1000
 
@@ -37,6 +37,9 @@ internal object Util {
      *  @param time 取当前的SystemClock.elapsedRealTime()
      */
     fun relativeTime(time: Long): String {
+        if (time <= 0) {
+            return "$time"
+        }
         var final = ""
         var relativeTime = time - Raster.zeroTime
         if (relativeTime > DURATION_ONE_DAY) {
@@ -65,7 +68,7 @@ internal object Util {
     }
 
     fun formatTime(time: Long): String {
-        return timeFormat.format(time)
+        return durationFormat.format(time)
     }
 
 }

@@ -1,22 +1,22 @@
 package com.tuya.smart.raster
 
-import java.util.concurrent.ConcurrentLinkedQueue
+import java.util.concurrent.ConcurrentLinkedDeque
 
 internal class RasterTimeLine: Iterable<RasterRecord> {
 
-    private val mList = ConcurrentLinkedQueue<RasterRecord>()
+    private val mList = ConcurrentLinkedDeque<RasterRecord>()
 
     private var mCount = 0
 
     fun addRecord(r: RasterRecord) {
         mList.offer(r)
-        if (r.name != "IDLE") {
+//        if (r.name != "IDLE") {
             if (Raster.logLevel >= RasterLogger.LogLevel.Debug) {
                 Raster.logger.d(msg = r.toString())
             }
-        }
+//        }
         mCount ++
-        val edge = r.start - Raster.timeLineDuration
+        val edge = mList.first.start - Raster.timeLineDuration
         if (edge < 0) {
             return
         }
