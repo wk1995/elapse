@@ -7,7 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import androidx.navigation.fragment.findNavController
-import com.tuya.smart.raster.Raster
+import com.tuya.smart.elapse.Elapse
 
 /**
  * A simple [Fragment] subclass as the default destination in the navigation.
@@ -32,7 +32,7 @@ class FirstFragment : Fragment() {
 //            } catch(e : Throwable) {
 //                e.printStackTrace()
 //            }
-            Raster.dump()
+            Elapse.dump()
         }
     }
 }

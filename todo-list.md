@@ -3,16 +3,16 @@
 
 ## CLI指令
 
-raster dump packageName -o output.txt   dump当前timeLine
+elapse dump packageName -o output.txt   dump当前timeLine
 
-raster slow packageName    连续输出卡顿日志
-   = tail raster-slow-xxxx-xxxx-pidxxxx.txt
+elapse slow packageName    连续输出卡顿日志
+   = tail elapse-slow-xxxx-xxxx-pidxxxx.txt
 
-raster set --slowThreshold  300
-raster set --recordDuration 300
-raster set --debuggable true|false
-raster set --log-level all|slow-only
+elapse set --slowThreshold  300
+elapse set --recordDuration 300
+elapse set --debuggable true|false
+elapse set --log-level all|slow-only
 
-raster -c 清除raster dump/slow文件
+elapse -c 清除elapse dump/slow文件
 
 

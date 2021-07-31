@@ -19,6 +19,6 @@ class ExampleInstrumentedTest {
     fun useAppContext() {
         // Context of the app under test.
         val appContext = InstrumentationRegistry.getInstrumentation().targetContext
-        assertEquals("com.tuya.smart.elapse", appContext.packageName)
+        assertEquals("com.tuya.smart.elapse.test", appContext.packageName)
     }
 }

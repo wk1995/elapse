@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    package="com.tuya.smart.elapse">
+
+    <application>
+        <service android:name="com.tuya.smart.elapse.ElapseCLIService" android:exported="true"
+            tools:ignore="ExportedService" >
+            <intent-filter>
+                <action android:name="elapse.service.cli"/>
+            </intent-filter>
+        </service>
+    </application>
+</manifest>

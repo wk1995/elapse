@@ -5,9 +5,9 @@ import android.content.Context
 import android.os.Handler
 import android.os.Looper
 import android.os.Message
-import com.tuya.smart.raster.Raster
-import com.tuya.smart.raster.RasterLogger
-import com.tuya.smart.raster.RasterOptions
+import com.tuya.smart.elapse.Elapse
+import com.tuya.smart.elapse.ElapseLogger
+import com.tuya.smart.elapse.ElapseOptions
 import me.weishu.reflection.Reflection
 
 class APP: Application(), Handler.Callback {
@@ -19,10 +19,10 @@ class APP: Application(), Handler.Callback {
 
     override fun onCreate() {
         super.onCreate()
-        val options = RasterOptions()
-        options.logLevel = RasterLogger.LogLevel.All
+        val options = ElapseOptions()
+        options.logLevel = ElapseLogger.LogLevel.All
         options.enableFindSlowMethod = true
-        Raster.init(this, options)
+        Elapse.init(this, options)
 
         val h = Handler(Looper.getMainLooper(), this)
         Thread {
