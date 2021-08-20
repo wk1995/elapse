@@ -6,6 +6,7 @@ import com.google.android.material.snackbar.Snackbar
 import androidx.appcompat.app.AppCompatActivity
 import android.view.Menu
 import android.view.MenuItem
+import android.view.MotionEvent
 
 class MainActivity : AppCompatActivity() {
 
@@ -34,5 +35,20 @@ class MainActivity : AppCompatActivity() {
             R.id.action_settings -> true
             else -> super.onOptionsItemSelected(item)
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+    }
+
+    override fun onTouchEvent(event: MotionEvent?): Boolean {
+        println("onTouchEvent $event")
+        Thread.dumpStack()
+        return super.onTouchEvent(event)
+    }
+
+    override fun dispatchTouchEvent(ev: MotionEvent?): Boolean {
+        println("dispatchTouchEvent $ev")
+        return super.dispatchTouchEvent(ev)
     }
 }

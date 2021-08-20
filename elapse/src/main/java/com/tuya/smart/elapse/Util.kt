@@ -1,8 +1,14 @@
 package com.tuya.smart.elapse
 
+import android.app.ActivityManager
+import android.app.Application
 import android.content.Context
 import android.content.pm.ApplicationInfo
+import android.os.Build
 import android.os.Looper
+import android.os.Process
+import android.text.TextUtils
+import com.tuya.smart.elapse.Elapse.context
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -71,4 +77,36 @@ internal object Util {
         return durationFormat.format(time)
     }
 
+    internal val processName: String
+        get() = initProcessName()!!
+
+    private var mProcessName: String? = null
+
+    private fun initProcessName(): String? {
+        if (!TextUtils.isEmpty(mProcessName)) {
+            return mProcessName
+        }
+        if (Build.VERSION.SDK_INT >= 28) {
+            mProcessName = Application.getProcessName()
+        } else {
+            try {
+                val am = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+                val runningApps = am.runningAppProcesses
+                if (runningApps != null) {
+                    for (processInfo in runningApps) {
+                        if (processInfo.pid == Process.myPid()) {
+                            mProcessName = processInfo.processName
+                        }
+                    }
+                }
+                if (TextUtils.isEmpty(mProcessName)) {
+                    mProcessName = context.packageName
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+        mProcessName = mProcessName?.replace(":", ".")
+        return mProcessName
+    }
 }

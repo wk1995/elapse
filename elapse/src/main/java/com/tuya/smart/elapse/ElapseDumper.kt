@@ -6,6 +6,7 @@ import android.util.SparseArray
 import androidx.core.util.set
 import java.io.File
 import java.io.FileWriter
+import java.io.InputStreamReader
 import java.lang.StringBuilder
 import java.text.SimpleDateFormat
 import java.util.*
@@ -59,6 +60,7 @@ date: ${dateFormat.format(Date())}
     }
 
     fun enqueue(o: Any) {
+        logger.i(msg = "enqueue message: $o")
         writeQueue.offer(o)
     }
 
@@ -92,7 +94,39 @@ total count: ${timeLine.getCount()}
         } catch (e: Throwable) {
             e.printStackTrace()
         }
+        logger.i(msg = "dumpsys meminfo ${Util.processName}")
+        dumperWriter.write("\n==================  dumpsys memory info  ====================\n")
+        executeShell(dumperWriter, "dumpsys meminfo ${Util.processName}", "dumpsys memory info failed!!")
+
+
+//        dumperWriter.write("\n==================  threads info ${Elapse.myPid} ====================\n")
+//        dumperWriter.flush()
+//        executeShell(dumperWriter, "top -H -m 50 -n 1", "top -H failed!!")
+
         dumperWriter.close()
+    }
+
+    private fun executeShell(dumperWriter: FileWriter, command: String, err: String) {
+        val runtime = Runtime.getRuntime()
+        try {
+            val process = runtime.exec(command)
+            val streamReader = InputStreamReader(process.inputStream)
+            val memInfo = streamReader.readText()
+            dumperWriter.write(memInfo)
+            dumperWriter.flush()
+            logger.d(msg = memInfo)
+            var errLines = 0
+            val errReader = InputStreamReader(process.errorStream)
+            errReader.readLines().onEach {
+                if (errLines == 0) {
+                    logger.e(msg = err)
+                }
+                logger.e(msg = it)
+                errLines ++
+            }
+        } catch (e: Throwable){
+            e.printStackTrace()
+        }
     }
 
     private fun dumpSlowRecord(r: ElapseRecord, writer: FileWriter) {
