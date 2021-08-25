@@ -23,13 +23,13 @@ internal data class ElapseRecord private constructor(var name: String, var count
     override fun toString(): String {
         return "${Elapse.dumper.dateTimeFormat.format(date)}: (name=$name, count=$count, start=${Util.relativeTime(start)}, end=${
             Util.relativeTime(
-                end!!
+                end ?: -1L
             )
         }, delta=${deltaTime()} cpuTime=$cpuTime, stackTrace=${stackTrace})"
     }
 
     fun deltaTime(): Long {
-        return end!! - start
+        return (end ?: -1) - start
     }
 
     fun recycle() {
