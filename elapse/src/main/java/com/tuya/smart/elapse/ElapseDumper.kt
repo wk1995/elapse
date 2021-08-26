@@ -167,17 +167,21 @@ ${stackTrace?.joinToString("\nat ", "at ")}
         synchronized(queue) {
             var msg: Message? = mMessages
             var count = 0
+            val curUptimeMills = SystemClock.uptimeMillis()
             while (msg != null) {
                 count++
-                dumpPendingMessage(msg, dumperWriter)
+                dumpPendingMessage(curUptimeMills, msg, dumperWriter)
                 msg = nextF.get(msg) as Message?
+                if (count % 10 == 0) {
+                    dumperWriter.flush()
+                }
             }
             dumperWriter.write("total count: $count \n")
             dumperWriter.flush()
         }
     }
 
-    private fun dumpPendingMessage(msg: Message, dumperWriter: FileWriter) {
+    private fun dumpPendingMessage(curUptimeMills: Long, msg: Message, dumperWriter: FileWriter) {
         if (msg.target == null) {
             return
         }
@@ -186,11 +190,11 @@ ${stackTrace?.joinToString("\nat ", "at ")}
             "android.app.ActivityThread\$H" -> {
                 pendingMessage =
                     "Pending KeyMsg: ${
-                        messageToString(msg, keyMsg = true)
+                        messageToString(curUptimeMills, msg, keyMsg = true)
                     }"
             }
             "android.view.Choreographer\$FrameHandler" -> {
-                val output = messageToString(msg, frameMsg = true)
+                val output = messageToString(curUptimeMills, msg, frameMsg = true)
                 pendingMessage = if (msg.what == 2 && msg.arg1 == 0) { // input事件
                     ("Pending InputMsg: $output")
                 } else {
@@ -198,7 +202,7 @@ ${stackTrace?.joinToString("\nat ", "at ")}
                 }
             }
             else -> {
-                pendingMessage = ("Pending Msg: ${messageToString(msg)}")
+                pendingMessage = ("Pending Msg: ${messageToString(curUptimeMills, msg)}")
             }
         }
         if (Elapse.logLevel >= ElapseLogger.LogLevel.Debug) {
@@ -216,11 +220,11 @@ ${stackTrace?.joinToString("\nat ", "at ")}
             frameKeys[2] = "DO_SCHEDULE_CALLBACK"
         }
 
-        private fun messageToString(msg: Message, keyMsg: Boolean = false, frameMsg:Boolean = false): String {
+        private fun messageToString(curUptimeMills: Long, msg: Message, keyMsg: Boolean = false, frameMsg:Boolean = false): String {
             msg.apply {
                 val b = StringBuilder()
                 b.append("{ when=-")
-                    .append(Util.formatTime(SystemClock.uptimeMillis() - `when`))
+                    .append(Util.formatTime(curUptimeMills - `when`))
 
 
                 if (target != null) {
@@ -260,6 +264,11 @@ ${stackTrace?.joinToString("\nat ", "at ")}
                     b.append(arg1)
                 }
 
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
+                    if (isAsynchronous) {
+                        b.append(" isAsynchronous=true")
+                    }
+                }
                 b.append(" }")
                 return b.toString()
             }
