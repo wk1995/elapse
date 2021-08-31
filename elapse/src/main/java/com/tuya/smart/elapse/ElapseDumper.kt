@@ -223,7 +223,7 @@ ${stackTrace?.joinToString("\nat ", "at ")}
         private fun messageToString(curUptimeMills: Long, msg: Message, keyMsg: Boolean = false, frameMsg:Boolean = false): String {
             msg.apply {
                 val b = StringBuilder()
-                b.append("{ when=-")
+                b.append("{ 0x${keyMsg.hashCode()} when=-")
                     .append(Util.formatTime(curUptimeMills - `when`))
 
 
