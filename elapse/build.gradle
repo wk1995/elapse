@@ -45,7 +45,7 @@ dependencies {
 }
 
 upInfo {
-    version = "20210831062218-v3.2.0#develop-56f8f8db"
+    version = "20211016072032-v3.2.5#develop-c7af12b4"
     artifactId = "tuyasmart-elapse"
     groupId = "com.tuya.smart"
     hasPomDepend false
