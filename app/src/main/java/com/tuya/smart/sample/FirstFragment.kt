@@ -27,12 +27,12 @@ class FirstFragment : Fragment() {
 
         view.findViewById<Button>(R.id.button_first).setOnClickListener {
             findNavController().navigate(R.id.action_FirstFragment_to_SecondFragment)
-//            try {
-//                Thread.sleep(150)
-//            } catch(e : Throwable) {
-//                e.printStackTrace()
-//            }
-            Elapse.dump()
+            try {
+                Thread.sleep(1000)
+            } catch(e : Throwable) {
+                e.printStackTrace()
+            }
+//            Elapse.dump()
         }
     }
 }

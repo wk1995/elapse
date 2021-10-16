@@ -2,6 +2,7 @@ package com.tuya.smart.elapse
 
 import android.os.*
 import com.tuya.smart.elapse.Elapse.START_FLAG
+import com.tuya.smart.elapse.Elapse.elapseDir
 import java.util.concurrent.ConcurrentHashMap
 
 internal class ElapseMonitor : HandlerThread("elapse-handler-thread") {
@@ -142,6 +143,11 @@ internal class ElapseMonitor : HandlerThread("elapse-handler-thread") {
     }
 
     fun finishMonitor() {
+        if (Task.samplingId > 0) {
+            println("stop tracing.... 2")
+            Debug.stopMethodTracing()
+            Task.samplingId = -1L
+        }
         val endTime = SystemClock.uptimeMillis()
         val r = curRecord!!
         val deltaTime = endTime - curMessageStartTime
@@ -204,12 +210,23 @@ internal class ElapseMonitor : HandlerThread("elapse-handler-thread") {
 
     class Task(var c: Long? = null, var m: String? = null): Runnable {
 
+
         companion object {
             val map = ConcurrentHashMap<Long, ElapseRecord>()
+
+            @Volatile
+            var samplingId = -1L
         }
 
         override fun run() {
-
+            if (samplingId > 0) {
+                println("stop tracing.... 1")
+                Debug.stopMethodTracing()
+                samplingId = -1L
+            }
+            samplingId = c!!
+            println("start tracing....")
+            Debug.startMethodTracingSampling(elapseDir + "/elapse-pid${Elapse.myPid}-${c}", 1024 * 1024, 1000)
             val s = m!!.substring(START_FLAG.length)
             val splits = s.split(" ")
             if (splits.size < 3) {
@@ -239,13 +256,7 @@ internal class ElapseMonitor : HandlerThread("elapse-handler-thread") {
                 Elapse.dumper.enqueue(slow!!)
             }, Elapse.enqueueDelay)
 
-            if (Elapse.enableFindSlowMethod) {
-                handler?.postDelayed(this, Elapse.slowThreshold)
-            } else {
-                recycleTask(this)
-            }
-
-
+            recycleTask(this)
         }
 
     }

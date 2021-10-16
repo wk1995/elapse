@@ -14,6 +14,10 @@ object Elapse {
 
     internal val myPid = Process.myPid()
 
+    internal val elapseDir = "elapse/" +
+            "" +
+            "${myPid}"
+
     const val END_FLAG = "<<<<< Finished to "
 
     internal var slowThreshold: Long = -1L
@@ -27,8 +31,6 @@ object Elapse {
     internal var timeLineDuration = -1
 
     internal var maxRecordCount = -1
-
-    internal var enableFindSlowMethod = false
 
     internal val zeroTime = SystemClock.uptimeMillis()
 

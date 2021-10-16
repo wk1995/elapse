@@ -6,5 +6,4 @@ data class ElapseOptions(@JvmField var slowThreshold: Long = 100L,    // 单条�
                          @JvmField var timeLineDuration:Int = 35 * 1000,  // elapse只记录最近timeLineDuration时间内的记录，超过timeLineDuration的记录会被清除
                          @JvmField var logLevel: ElapseLogger.LogLevel = ElapseLogger.LogLevel.Error,
                          @JvmField var logger: ElapseLogger = ElapseLogger.Default,
-                         @JvmField var enableFindSlowMethod: Boolean = false
 )

@@ -35,7 +35,7 @@ internal class ElapseDumper: Thread("elapse-dumper") {
 
     init {
         val fileName = "elapse-slow-${dateFormat.format(Date())}-pid${Elapse.myPid}.txt"
-        val slowFile = File(Elapse.context.getExternalFilesDir("elapse"), fileName)
+        val slowFile = File(Elapse.context.getExternalFilesDir(Elapse.elapseDir), fileName)
         slowFileWriter = FileWriter(slowFile)
 
         val fileHeader = """
@@ -66,7 +66,7 @@ date: ${dateFormat.format(Date())}
 
     private fun dumpTimeLine(timeLine: ElapseTimeLine) {
         val fileName = "elapse-dumper-${dateFormat.format(Date())}-pid${Elapse.myPid}.txt"
-        val dumperFile = File(Elapse.context.getExternalFilesDir("elapse"), fileName)
+        val dumperFile = File(Elapse.context.getExternalFilesDir(Elapse.elapseDir), fileName)
         val dumperWriter = FileWriter(dumperFile)
         val dumperHeader = """
 Elapse Dump:
@@ -235,7 +235,7 @@ ${stackTrace?.joinToString("\nat ", "at ")}
                     b.append(" what=")
                     when {
                         keyMsg -> {
-                            b.append("${ElapseKeyMessages[what]}(${what}")
+                            b.append("${ElapseKeyMessages[what]}(${what})")
                         }
                         frameMsg -> {
                             b.append("${frameKeys[what]}(${what})")
