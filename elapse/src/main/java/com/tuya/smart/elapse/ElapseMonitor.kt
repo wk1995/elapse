@@ -145,7 +145,7 @@ internal class ElapseMonitor : HandlerThread("elapse-handler-thread") {
     fun finishMonitor() {
         if (Task.samplingId > 0) {
             println("stop tracing.... 2")
-            Debug.stopMethodTracing()
+//            Debug.stopMethodTracing()
             Task.samplingId = -1L
         }
         val endTime = SystemClock.uptimeMillis()
@@ -221,12 +221,12 @@ internal class ElapseMonitor : HandlerThread("elapse-handler-thread") {
         override fun run() {
             if (samplingId > 0) {
                 println("stop tracing.... 1")
-                Debug.stopMethodTracing()
+//                Debug.stopMethodTracing()
                 samplingId = -1L
             }
             samplingId = c!!
             println("start tracing....")
-            Debug.startMethodTracingSampling(elapseDir + "/elapse-pid${Elapse.myPid}-${c}", 1024 * 1024, 1000)
+//            Debug.startMethodTracingSampling(elapseDir + "/elapse-pid${Elapse.myPid}-${c}", 1024 * 1024, 1000)
             val s = m!!.substring(START_FLAG.length)
             val splits = s.split(" ")
             if (splits.size < 3) {

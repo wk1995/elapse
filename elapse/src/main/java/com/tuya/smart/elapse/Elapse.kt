@@ -5,6 +5,7 @@ import android.content.Context
 import android.os.Looper
 import android.os.Process
 import android.os.SystemClock
+import java.io.File
 import kotlin.math.max
 
 @SuppressLint("StaticFieldLeak")
@@ -14,9 +15,7 @@ object Elapse {
 
     internal val myPid = Process.myPid()
 
-    internal val elapseDir = "elapse/" +
-            "" +
-            "${myPid}"
+    internal val elapseDir = "elapse/$myPid"
 
     const val END_FLAG = "<<<<< Finished to "
 
@@ -47,6 +46,13 @@ object Elapse {
     internal var logLevel = ElapseLogger.LogLevel.Slow
 
     internal lateinit var context: Context
+
+    init {
+        val elapseDirFile = File(elapseDir)
+        if (elapseDirFile.exists()) {
+            elapseDirFile.delete()
+        }
+    }
 
     @JvmStatic @JvmOverloads fun init(context: Context, options: ElapseOptions = ElapseOptions()) {
         Util.checkInMainThread()
