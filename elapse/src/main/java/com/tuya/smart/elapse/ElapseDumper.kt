@@ -89,6 +89,7 @@ total count: ${timeLine.getCount()}
                 dumperWriter.flush()
             }
         }
+        dumpRunningRecord(timeLine, dumperWriter)
         try {
             dumpPendingMessages(dumperWriter)
         } catch (e: Throwable) {
@@ -104,6 +105,30 @@ total count: ${timeLine.getCount()}
 //        executeShell(dumperWriter, "top -H -m 50 -n 1", "top -H failed!!")
 
         dumperWriter.close()
+    }
+
+    private fun dumpRunningRecord(timeLine: ElapseTimeLine, dumperWriter: FileWriter) {
+        timeLine.runningRecord?.apply {
+            val formatRecord = """
+------------ Running Record (${dateTimeFormat.format(date)})  ------------
+start: timestamp=${start}  relative=${Util.relativeTime(start)} 
+end:   timestamp=${end}    relative=${Util.relativeTime(end ?: 0L)}
+count = $count
+wallTime${if (end != null) "=${end?.minus(start)}" else ">=${timeLine.anrTimestamp - start}"}   cpuTime=${cpuTime ?: "unknown"}
+handler=${handler}
+callback=${callback}
+what=${what} ${if (handler.startsWith("Handler(android.app.ActivityThread\$H)")) {"(${ElapseKeyMessages[what.toInt()]})"} else ""}
+main thread stack:               
+${stackTrace?.joinToString("\nat ", "at ")}
+
+            """.trimIndent()
+
+            if (Elapse.logLevel >= ElapseLogger.LogLevel.Slow) {
+                logger.e(msg = formatRecord)
+            }
+            dumperWriter.write(formatRecord)
+            dumperWriter.flush()
+        }
     }
 
     private fun executeShell(dumperWriter: FileWriter, command: String, err: String) {
@@ -133,15 +158,14 @@ total count: ${timeLine.getCount()}
         r.apply {
             val formatRecord = """
 ------------ Slow Record (${dateTimeFormat.format(date)})  ------------
-end:   timestamp=${end}  relative=${Util.relativeTime(end ?: 0L)}
 start: timestamp=${start}  relative=${Util.relativeTime(start)} 
+end:   timestamp=${end}    relative=${Util.relativeTime(end ?: 0L)}
 wallTime${if (end != null) "=${end?.minus(start)}" else ">=${Elapse.enqueueDelay}"}   cpuTime=${cpuTime ?: "unknown"}
 handler=${handler}
 callback=${callback}
 what=${what} ${if (handler.startsWith("Handler(android.app.ActivityThread\$H)")) {"(${ElapseKeyMessages[what.toInt()]})"} else ""}
 main thread stack:               
 ${stackTrace?.joinToString("\nat ", "at ")}
-
 
             """.trimIndent()
             if (Elapse.logLevel >= ElapseLogger.LogLevel.Slow) {

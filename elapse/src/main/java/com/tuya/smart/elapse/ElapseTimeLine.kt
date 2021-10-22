@@ -8,7 +8,16 @@ internal class ElapseTimeLine: Iterable<ElapseRecord> {
 
     private var mCount = 0
 
+    var runningRecord: ElapseRecord? = null
+
+    var anrTimestamp: Long = -1
+
     fun addRecord(r: ElapseRecord) {
+        runningRecord?.apply {
+            if (r.start == start) {
+                end = r.end
+            }
+        }
         mDequeue.offer(r)
 //        if (r.name != "IDLE") {
             if (Elapse.logLevel >= ElapseLogger.LogLevel.Debug) {

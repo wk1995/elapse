@@ -2,7 +2,6 @@ package com.tuya.smart.elapse
 
 import android.os.*
 import com.tuya.smart.elapse.Elapse.START_FLAG
-import com.tuya.smart.elapse.Elapse.elapseDir
 import java.util.concurrent.ConcurrentHashMap
 
 internal class ElapseMonitor : HandlerThread("elapse-handler-thread") {
@@ -263,6 +262,15 @@ internal class ElapseMonitor : HandlerThread("elapse-handler-thread") {
 
     fun dumpTimeLine() {
         handler?.post {
+            timeLine.anrTimestamp = SystemClock.uptimeMillis()
+            curRecord?.apply {
+                timeLine.runningRecord = ElapseRecord.obtain(name,
+                        start, end, count, cpuTime)
+                timeLine.runningRecord?.cpuTime = cpuTime() - curRecordCPUTime
+                timeLine.runningRecord?.what = what
+                timeLine.runningRecord?.handler = handler
+                timeLine.runningRecord?.stackTrace = Looper.getMainLooper().thread.stackTrace
+            }
             Elapse.dumper.enqueue(timeLine)
         }
     }
