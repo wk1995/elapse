@@ -11,6 +11,7 @@ import java.lang.StringBuilder
 import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.LinkedBlockingQueue
+import kotlin.math.abs
 
 /**
  * write down all slow message to file
@@ -247,8 +248,12 @@ ${stackTrace?.joinToString("\nat ", "at ")}
         private fun messageToString(curUptimeMills: Long, msg: Message, keyMsg: Boolean = false, frameMsg:Boolean = false): String {
             msg.apply {
                 val b = StringBuilder()
-                b.append("{ 0x${keyMsg.hashCode()} when=-")
-                    .append(Util.formatTime(curUptimeMills - `when`))
+                b.append("{ 0x${keyMsg.hashCode()} when=")
+                val delta = curUptimeMills - `when`
+                if (delta > 0) {
+                    b.append("-")
+                }
+                b.append(Util.formatTime(abs(curUptimeMills - `when`)))
 
 
                 if (target != null) {
