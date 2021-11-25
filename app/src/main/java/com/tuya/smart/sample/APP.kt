@@ -9,15 +9,13 @@ import android.util.Log
 import com.tuya.smart.elapse.Elapse
 import com.tuya.smart.elapse.ElapseLogger
 import com.tuya.smart.elapse.ElapseOptions
-import me.weishu.reflection.Reflection
-import xcrash.ICrashCallback
 import xcrash.XCrash
 
 class APP: Application(), Handler.Callback {
 
     override fun attachBaseContext(base: Context?) {
         super.attachBaseContext(base)
-        Reflection.unseal(base)
+//        Reflection.unseal(base)
 
         val inits = XCrash.InitParameters()
         inits.enableAnrCrashHandler()
