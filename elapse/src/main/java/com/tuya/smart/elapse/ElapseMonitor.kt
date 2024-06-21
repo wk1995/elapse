@@ -42,15 +42,19 @@ internal class ElapseMonitor : HandlerThread("elapse-handler-thread") {
 
     private lateinit var slowTask: Task
 
-    private var curMessageCpuTime = -1L   // 记录当前消息的cpuTime
-
+    /**记录当前消息的cpuTime*/
+    private var curMessageCpuTime = -1L
+    /**记录上一个消息的结束时间*/
     private var lastMessageEndTime = -1L
 
-    private var curMessageStartTime = -1L  // 记录当前record的startTime
+    /**记录当前record的startTime*/
+    private var curMessageStartTime = -1L
 
-    private var curRecord: ElapseRecord? = null  // 当前record, 是一定时间范围历史消息的聚合
+    /**当前record, 是一定时间范围历史消息的聚合*/
+    private var curRecord: ElapseRecord? = null
 
-    private var curRecordCPUTime = -1L    // 记录当前record的cpuTime
+    /**记录当前record的cpuTime*/
+    private var curRecordCPUTime = -1L
 
     private val logger: ElapseLogger = Elapse.logger
 
@@ -66,6 +70,7 @@ internal class ElapseMonitor : HandlerThread("elapse-handler-thread") {
             lastMessageEndTime = startTime
         }
 
+        //单条消息超过 则认为是闲置消息
         if (startTime - lastMessageEndTime > Elapse.idleThreshold) { // 记录超时的idle
             curRecord?.run {
                 end = lastMessageEndTime

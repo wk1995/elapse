@@ -21,10 +21,14 @@ object Elapse {
 
     internal var slowThreshold: Long = -1L
 
+    /**消息间隔超过idleThreshold时, 消息间隔会被作为一条idle记录*/
     internal var idleThreshold: Long = -1L
 
     internal var enqueueDelay: Long = -1L
 
+    /**
+     * 单条记录最大时长, 连续多条消息时间总和在recordMaxDuration内的，会聚合记录在一条Msgs记录
+     * */
     internal var recordMaxDuration = -1
 
     internal var timeLineDuration = -1
