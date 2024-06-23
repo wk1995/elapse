@@ -1,7 +1,6 @@
 plugins {
     id 'com.android.library'
     id 'kotlin-android'
-    id 'upload'
 }
 
 android {
@@ -34,14 +33,7 @@ android {
 }
 
 dependencies {
-    implementation 'com.tuya.smart:customlint:1.0.9-rc.1-SNAPSHOT'
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
 //    compileOnly "com.tuya.smart:tuyasmart-elapse:0.0.1"
 }
 
-upInfo {
-    version = "0.0.2"
-    artifactId = "tuyasmart-elapse-no-op"
-    groupId = "com.tuya.smart"
-    hasPomDepend false
-}

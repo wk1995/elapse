@@ -1,7 +1,6 @@
 plugins {
     id 'com.android.library'
     id 'kotlin-android'
-    id 'upload'
 }
 
 android {
@@ -9,7 +8,7 @@ android {
     buildToolsVersion "30.0.3"
 
     defaultConfig {
-        minSdkVersion 19
+        minSdkVersion 21
         targetSdkVersion 30
         versionCode 1
         versionName "1.0"
@@ -34,7 +33,6 @@ android {
 }
 
 dependencies {
-    implementation 'com.tuya.smart:customlint:1.0.9-rc.1'
 
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
     implementation 'androidx.core:core-ktx:1.5.0'
@@ -43,11 +41,4 @@ dependencies {
     testImplementation 'junit:junit:4.+'
     androidTestImplementation 'androidx.test.ext:junit:1.1.2'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
-}
-
-upInfo {
-    version = "20211125113604-#master-22f38f55"
-    artifactId = "tuyasmart-elapse"
-    groupId = "com.tuya.smart"
-    hasPomDepend false
 }
