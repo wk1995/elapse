@@ -17,9 +17,9 @@ internal class ElapseHandler : Printer {
         }
     }
 
-    private fun messageStarted(m: String) {
+    private fun messageStarted(looperMsg: String) {
         startTime = SystemClock.uptimeMillis()
-        Elapse.monitor.startMonitor(startTime, m)
+        Elapse.monitor.startMonitor(startTime, looperMsg)
     }
 
     private fun messageFinished() {

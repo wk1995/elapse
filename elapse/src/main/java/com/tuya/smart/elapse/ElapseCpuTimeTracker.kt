@@ -19,7 +19,7 @@ internal object ElapseCpuTimeTracker {
     private const val PROCESS_STAT_UTIME = 2
     private const val PROCESS_STAT_STIME = 3
 
-    var mJiffyMillis = 1000 / Os.sysconf(OsConstants._SC_CLK_TCK)
+    private var mJiffyMillis = 1000 / Os.sysconf(OsConstants._SC_CLK_TCK)
 
     private val PROCESS_STATS_FORMAT = intArrayOf(
         PROC_SPACE_TERM,

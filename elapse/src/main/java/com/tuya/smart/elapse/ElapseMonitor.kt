@@ -21,7 +21,7 @@ internal class ElapseMonitor : HandlerThread("elapse-handler-thread") {
         private const val inputMessageRegex = "Handler (android.view.Choreographer\$FrameHandler)"
 
         fun obtainTask(c: Long, m: String): Task {
-            val task = taskPool.removeFirstOrNull()?: Task()
+            val task = taskPool.removeFirstOrNull() ?: Task()
             task.c = c
             task.m = m
             return task
@@ -44,6 +44,7 @@ internal class ElapseMonitor : HandlerThread("elapse-handler-thread") {
 
     /**记录当前消息的cpuTime*/
     private var curMessageCpuTime = -1L
+
     /**记录上一个消息的结束时间*/
     private var lastMessageEndTime = -1L
 
@@ -59,7 +60,7 @@ internal class ElapseMonitor : HandlerThread("elapse-handler-thread") {
     private val logger: ElapseLogger = Elapse.logger
 
 
-    fun startMonitor(startTime: Long, m: String) {
+    fun startMonitor(startTime: Long, looperMsg: String) {
 
         curMessageStartTime = startTime
 
@@ -87,25 +88,30 @@ internal class ElapseMonitor : HandlerThread("elapse-handler-thread") {
             timeLine.addRecord(idleRecord)
         }
 
-        if (m.indexOf(keyMessageRegex, startIndex = START_FLAG.length) >= 0) { // ActivityThread.mH消息
+        if (looperMsg.indexOf(
+                keyMessageRegex,
+                startIndex = START_FLAG.length
+            ) >= 0
+        ) { // ActivityThread.mH消息
             curRecord?.run {
                 end = lastMessageEndTime
                 cpuTime = curMessageCpuTime - curRecordCPUTime // 误差有限
                 timeLine.addRecord(this)
                 curRecordCPUTime = -1
             }
-            val splits = m.split(" ")
+            val splits = looperMsg.split(" ")
             val key = splits[splits.size - 1].toInt()
-            curRecord = ElapseRecord.obtain("KeyMsg ${ElapseKeyMessages[key]}($key)", start = startTime)
+            curRecord =
+                ElapseRecord.obtain("KeyMsg ${ElapseKeyMessages[key]}($key)", start = startTime)
         }
 
         if (inputMessageRegexOn) { // always false, will delete
-            if (m.indexOf(
+            if (looperMsg.indexOf(
                     inputMessageRegex,
                     startIndex = START_FLAG.length
                 ) > 0
             ) { // Choreographer.FrameHandler
-                val splits = m.split(" ")
+                val splits = looperMsg.split(" ")
                 val key = splits[splits.size - 1].toInt()
                 if (key == 0) { // 0 = Choreographer.MSG_DO_FRAME
                     curRecord?.run {
@@ -138,11 +144,8 @@ internal class ElapseMonitor : HandlerThread("elapse-handler-thread") {
         if (curRecordCPUTime < 0) {
             curRecordCPUTime = curMessageCpuTime
         }
-        val r = curRecord?: ElapseRecord.obtain("Msgs", start = startTime)
-
-        curRecord = r
-
-        slowTask = obtainTask(curMessageStartTime, m)
+        curRecord = curRecord ?: ElapseRecord.obtain("Msgs", start = startTime)
+        slowTask = obtainTask(curMessageStartTime, looperMsg)
         handler?.postDelayed(slowTask, Elapse.slowThreshold)
     }
 
@@ -160,11 +163,11 @@ internal class ElapseMonitor : HandlerThread("elapse-handler-thread") {
 
             if (endTime - r.start < Elapse.recordMaxDuration) {
                 // 小于阈值，聚合
-                r.count ++
+                r.count++
             } else {
                 // 大于阈值, 闭合record
                 r.end = endTime
-                r.count ++
+                r.count++
                 r.cpuTime = cpuTime() - curRecordCPUTime
                 curRecordCPUTime = -1 // 重置
                 timeLine.addRecord(r)
@@ -212,10 +215,11 @@ internal class ElapseMonitor : HandlerThread("elapse-handler-thread") {
         handler = Handler(looper)
     }
 
-    class Task(var c: Long? = null, var m: String? = null): Runnable {
-
+    class Task(var c: Long? = null, var m: String? = null) : Runnable {
 
         companion object {
+
+            private const val TAG = "Task"
             val map = ConcurrentHashMap<Long, ElapseRecord>()
 
             @Volatile
@@ -224,14 +228,14 @@ internal class ElapseMonitor : HandlerThread("elapse-handler-thread") {
 
         override fun run() {
             if (samplingId > 0) {
-                println("stop tracing.... 1")
+                Elapse.logger.d(TAG, "stop tracing.... 1")
 //                Debug.stopMethodTracing()
                 samplingId = -1L
             }
             samplingId = c!!
-            println("start tracing....")
+            Elapse.logger.d(TAG, "start tracing....")
 //            Debug.startMethodTracingSampling(elapseDir + "/elapse-pid${Elapse.myPid}-${c}", 1024 * 1024, 1000)
-            val s = m!!.substring(START_FLAG.length)
+            val s = m?.substring(START_FLAG.length)?:""
             val splits = s.split(" ")
             if (splits.size < 3) {
                 return
@@ -247,7 +251,7 @@ internal class ElapseMonitor : HandlerThread("elapse-handler-thread") {
                     map.remove(c!!)
                 }
             }
-            slow!!.apply {
+            slow?.apply {
                 val length = splits.size
                 handler = splits.joinToString(separator = "", limit = length - 2, truncated = "")
                 callback = splits[length - 2].substring(0, splits[length - 2].length - 2)
@@ -269,8 +273,10 @@ internal class ElapseMonitor : HandlerThread("elapse-handler-thread") {
         handler?.post {
             timeLine.anrTimestamp = SystemClock.uptimeMillis()
             curRecord?.apply {
-                timeLine.runningRecord = ElapseRecord.obtain(name,
-                        start, end, count, cpuTime)
+                timeLine.runningRecord = ElapseRecord.obtain(
+                    name,
+                    start, end, count, cpuTime
+                )
                 timeLine.runningRecord?.cpuTime = cpuTime() - curRecordCPUTime
                 timeLine.runningRecord?.what = what
                 timeLine.runningRecord?.handler = handler
